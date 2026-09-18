@@ -19,3 +19,9 @@ export type SuggestedPrompt = {
   emoji: string;
   label: string;
 };
+
+export const suggestedPrompts: SuggestedPrompt[] = [
+  { id: 'bursaries', emoji: '✨', label: 'What bursaries fund TVET diplomas?' },
+  { id: 'aps', emoji: '📊', label: 'How do I calculate my final APS?' },
+  { id: 'upgrade', emoji: '🔄', label: 'Can I upgrade my Maths marks?' },
+];

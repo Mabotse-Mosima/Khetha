@@ -1,23 +1,22 @@
-import { ChatMessage, SuggestedPrompt } from '@/data/ask-khetha';
+import { ChatMessage, suggestedPrompts, SuggestedPrompt } from '@/data/ask-khetha';
 
 import { apiClient } from './api-client';
 
 export type ChatReply = Pick<ChatMessage, 'text' | 'pathways' | 'followUp'>;
 
 export const ChatService = {
-  // GET /advisor/conversation
+  // No backend history endpoint yet — conversations start fresh each session.
   getConversationHistory(): Promise<ChatMessage[]> {
-    return apiClient.get<ChatMessage[]>('/advisor/conversation');
+    return Promise.resolve([]);
   },
 
-  // GET /advisor/suggested-prompts
+  // No backend endpoint yet — served from static client-side data.
   getSuggestedPrompts(): Promise<SuggestedPrompt[]> {
-    return apiClient.get<SuggestedPrompt[]>('/advisor/suggested-prompts');
+    return Promise.resolve(suggestedPrompts);
   },
 
-  // POST /advisor/messages — pass promptId when the learner tapped a suggested
-  // prompt chip, otherwise this is a freeform question.
-  sendMessage(text: string, promptId?: string): Promise<ChatReply> {
-    return apiClient.post<ChatReply>('/advisor/messages', { text, promptId });
+  // POST /api/ask
+  sendMessage(text: string): Promise<ChatReply> {
+    return apiClient.post<ChatReply>('/ask', { message: text });
   },
 };

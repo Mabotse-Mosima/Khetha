@@ -7,6 +7,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AdvisorMessage } from '@/components/ncap/advisor-message';
@@ -14,6 +15,7 @@ import { DhetGuidanceCard } from '@/components/ncap/dhet-guidance-card';
 import { RoadmapStepRow } from '@/components/ncap/roadmap-step-row';
 import { ScreenLoading } from '@/components/ncap/screen-loading';
 import { TopNavBar } from '@/components/ncap/top-nav-bar';
+import { TypingIndicator } from '@/components/ncap/typing-indicator';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, MaxContentWidth, Radius, Spacing } from '@/constants/theme';
@@ -23,13 +25,15 @@ import { ApiError } from '@/services/api-client';
 import { ChatService } from '@/services/chat-service';
 import { Roadmap, RoadmapService } from '@/services/roadmap-service';
 
+const CHAT_CARD_HEIGHT = 600;
+
 function formatTime() {
   return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
 export default function AskKhethaScreen() {
   const theme = useTheme();
-  const scrollRef = useRef<ScrollView>(null);
+  const chatScrollRef = useRef<ScrollView>(null);
   const nextMessageId = useRef(0);
   const [messages, setMessages] = useState<ChatMessage[] | null>(null);
   const [suggestedPrompts, setSuggestedPrompts] = useState<SuggestedPrompt[]>([]);
@@ -37,6 +41,7 @@ export default function AskKhethaScreen() {
   const [inputText, setInputText] = useState('');
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loadAttempt, setLoadAttempt] = useState(0);
+  const [isSending, setIsSending] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -66,7 +71,9 @@ export default function AskKhethaScreen() {
     return `${nextMessageId.current}-${suffix}`;
   }
 
-  function sendMessage(displayText: string, promptId?: string) {
+  function sendMessage(displayText: string) {
+    if (isSending) return;
+
     const userMessage: ChatMessage = {
       id: generateMessageId('user'),
       sender: 'user',
@@ -74,8 +81,9 @@ export default function AskKhethaScreen() {
       time: formatTime(),
     };
     setMessages((current) => [...(current ?? []), userMessage]);
+    setIsSending(true);
 
-    ChatService.sendMessage(displayText, promptId)
+    ChatService.sendMessage(displayText)
       .then((reply) => {
         const aiMessage: ChatMessage = {
           id: generateMessageId('ai'),
@@ -96,7 +104,8 @@ export default function AskKhethaScreen() {
               : "Couldn't reach the DHET advisor. Please try again.",
         };
         setMessages((current) => [...(current ?? []), errorMessage]);
-      });
+      })
+      .finally(() => setIsSending(false));
   }
 
   function handleSend() {
@@ -132,13 +141,16 @@ export default function AskKhethaScreen() {
           <ScreenLoading label="Loading Ask Khetha..." />
         ) : (
           <ScrollView
-            ref={scrollRef}
             style={styles.scroll}
             contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-            onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}>
+            showsVerticalScrollIndicator={false}>
             {/* Ask Khetha AI advisor */}
-            <View style={[styles.section, { backgroundColor: theme.surfaceContainerLowest, borderColor: theme.cardBorder }]}>
+            <View
+              style={[
+                styles.section,
+                styles.chatCard,
+                { backgroundColor: theme.surfaceContainerLowest, borderColor: theme.cardBorder },
+              ]}>
               <View style={[styles.advisorHeader, { backgroundColor: theme.surfaceContainerLow }]}>
                 <View style={styles.advisorIdentity}>
                   <View style={styles.avatarWrapper}>
@@ -190,20 +202,31 @@ export default function AskKhethaScreen() {
                 </View>
               </View>
 
-              <View style={styles.chatStream}>
+              <ScrollView
+                ref={chatScrollRef}
+                style={styles.chatStream}
+                contentContainerStyle={styles.chatStreamContent}
+                showsVerticalScrollIndicator={false}
+                onContentSizeChange={() => chatScrollRef.current?.scrollToEnd({ animated: true })}>
                 {messages.map((message) => (
                   <AdvisorMessage key={message.id} message={message} />
                 ))}
-              </View>
+                {isSending && (
+                  <Animated.View entering={FadeIn.duration(150)} exiting={FadeOut.duration(150)}>
+                    <TypingIndicator />
+                  </Animated.View>
+                )}
+              </ScrollView>
 
               <ScrollView
                 horizontal
+                style={styles.chipsScroll}
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.chipsRow}>
                 {suggestedPrompts.map((prompt) => (
                   <Pressable
                     key={prompt.id}
-                    onPress={() => sendMessage(`${prompt.emoji} ${prompt.label}`, prompt.id)}
+                    onPress={() => sendMessage(`${prompt.emoji} ${prompt.label}`)}
                     style={({ pressed }) => [
                       styles.promptChip,
                       { backgroundColor: theme.surfaceContainer },
@@ -341,6 +364,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     overflow: 'hidden',
   },
+  chatCard: {
+    height: CHAT_CARD_HEIGHT,
+  },
   advisorHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -413,8 +439,16 @@ const styles = StyleSheet.create({
     opacity: 0.85,
   },
   chatStream: {
+    flex: 1,
+    minHeight: 0,
+  },
+  chatStreamContent: {
     padding: Spacing.three,
     gap: Spacing.three,
+  },
+  chipsScroll: {
+    flexGrow: 0,
+    flexShrink: 0,
   },
   chipsRow: {
     gap: Spacing.one,

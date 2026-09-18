@@ -30,8 +30,9 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
         ...options?.headers,
       },
     });
-  } catch {
-    throw new ApiError('Network error — check your connection and try again.', 0);
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+    throw new ApiError(`Network error — ${reason}`, 0);
   }
 
   if (!response.ok) {
