@@ -9,9 +9,17 @@ type AssessmentNavControlsProps = {
   canGoPrevious: boolean;
   onPrevious: () => void;
   onNext: () => void;
+  nextDisabled?: boolean;
+  nextLabel?: string;
 };
 
-export function AssessmentNavControls({ canGoPrevious, onPrevious, onNext }: AssessmentNavControlsProps) {
+export function AssessmentNavControls({
+  canGoPrevious,
+  onPrevious,
+  onNext,
+  nextDisabled = false,
+  nextLabel = 'Next Question',
+}: AssessmentNavControlsProps) {
   const theme = useTheme();
 
   return (
@@ -30,13 +38,14 @@ export function AssessmentNavControls({ canGoPrevious, onPrevious, onNext }: Ass
 
       <Pressable
         onPress={onNext}
+        disabled={nextDisabled}
         style={({ pressed }) => [
           styles.nextButton,
-          { backgroundColor: theme.primary },
-          pressed && styles.pressed,
+          { backgroundColor: theme.primary, opacity: nextDisabled ? 0.5 : 1 },
+          pressed && !nextDisabled && styles.pressed,
         ]}>
         <ThemedText type="smallBold" style={{ color: theme.onPrimary }}>
-          Next Question
+          {nextLabel}
         </ThemedText>
         <MaterialIcons name="arrow-forward" size={18} color={theme.onPrimary} />
       </Pressable>
