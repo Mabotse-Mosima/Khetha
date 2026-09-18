@@ -17,12 +17,16 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { AssessmentResult, HollandCodeQuestion, RIASEC_LABELS } from '@/data/assessment-questions';
+import { useAuth } from '@/contexts/auth-context';
+import { JOURNEY_STEP } from '@/data/journey';
 import { useTheme } from '@/hooks/use-theme';
 import { ApiError } from '@/services/api-client';
 import { AssessmentService } from '@/services/assessment-service';
+import { RoadmapService } from '@/services/roadmap-service';
 
 export default function CareerJobFitScreen() {
   const theme = useTheme();
+  const { learner } = useAuth();
   const [questions, setQuestions] = useState<HollandCodeQuestion[] | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
@@ -63,7 +67,13 @@ export default function CareerJobFitScreen() {
     AssessmentService.submitAnswers(
       Object.entries(answers).map(([questionId, rating]) => ({ questionId: Number(questionId), rating })),
     )
-      .then((data) => setResult(data))
+      .then((data) => {
+        setResult(data);
+        if (learner) {
+          // Best-effort — a roadmap sync failure shouldn't disrupt the result the learner just got.
+          RoadmapService.completeStep(JOURNEY_STEP.assess).catch(() => {});
+        }
+      })
       .catch((error: unknown) => {
         setSubmitError(error instanceof ApiError ? error.message : 'Something went wrong submitting your answers.');
       })
