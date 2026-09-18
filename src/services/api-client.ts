@@ -1,5 +1,11 @@
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
+let authToken: string | null = null;
+
+export function setAuthToken(token: string | null): void {
+  authToken = token;
+}
+
 export class ApiError extends Error {
   status: number;
 
@@ -27,6 +33,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
       ...options,
       headers: {
         'Content-Type': 'application/json',
+        ...(authToken ? { Authorization: `Bearer ${authToken}` } : null),
         ...options?.headers,
       },
     });
