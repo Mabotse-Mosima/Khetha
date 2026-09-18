@@ -1,6 +1,6 @@
 import { MaterialIcons } from '@expo/vector-icons';
 
-export type RoadmapStatus = 'done' | 'active' | 'inProgress' | 'upcoming';
+export type RoadmapStatus = 'done' | 'active' | 'upcoming';
 
 export type RoadmapHighlightChip = {
   icon: keyof typeof MaterialIcons.glyphMap;
@@ -17,53 +17,31 @@ export type RoadmapStep = {
   highlightChips?: RoadmapHighlightChip[];
 };
 
-export const roadmapProgressPercent = 60;
-export const roadmapProgressLabel = '60% Complete';
-
-export const roadmapSteps: RoadmapStep[] = [
+// The 5 fixed steps of the backend's JourneyStep enum (0-4), in order.
+export const JOURNEY_STEP_META: { icon: keyof typeof MaterialIcons.glyphMap; title: string; description: string }[] = [
   {
-    id: 'subjects',
-    icon: 'check',
-    title: '1. Subjects Selected',
-    status: 'done',
-    badgeLabel: '✓ Done',
-    description: '6 subjects recorded (English FAL 65%, Maths Lit 68%, Life Sci 62%)',
+    icon: 'explore',
+    title: '1. Explore Careers',
+    description: 'Browse subjects, careers and qualifications in high demand.',
   },
   {
-    id: 'assessment',
-    icon: 'check',
-    title: '2. Fit Assessment Completed',
-    status: 'done',
-    badgeLabel: '✓ Done',
-    description: 'Dominant Holland Profile: Technical & Realistic',
+    icon: 'psychology-alt',
+    title: '2. Job-Fit Assessment',
+    description: 'Complete the RIASEC assessment to find careers that match your strengths.',
   },
   {
-    id: 'careers',
     icon: 'bookmark',
-    title: '3. Saved Careers',
-    status: 'active',
-    badgeLabel: 'Active Focus',
-    description: '3 curated careers in high demand:',
-    highlightChips: [
-      { icon: 'wb-sunny', label: 'Solar Technician' },
-      { icon: 'terminal', label: 'Software Developer' },
-      { icon: 'eco', label: 'Agri Specialist' },
-    ],
+    title: '3. Shortlist Careers',
+    description: 'Save the career and qualification options you want to pursue.',
   },
   {
-    id: 'qualifications',
     icon: 'school',
-    title: '4. Qualifications & Colleges',
-    status: 'inProgress',
-    badgeLabel: 'In Progress',
-    description: '2 TVET colleges shortlisted (Ekurhuleni West & Sedibeng TVET)',
+    title: '4. Apply to Institutions',
+    description: 'Apply to TVET colleges or universities for your shortlisted qualifications.',
   },
   {
-    id: 'bursaries',
     icon: 'payments',
-    title: '5. Bursaries & Funding',
-    status: 'upcoming',
-    badgeLabel: 'Upcoming',
-    description: 'NSFAS 2025/2026 checklist ready for submission',
+    title: '5. Enroll & Get Funded',
+    description: 'Confirm your place and apply for NSFAS or other funding.',
   },
 ];

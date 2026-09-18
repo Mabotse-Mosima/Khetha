@@ -1,4 +1,5 @@
 import { MaterialIcons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import {
   Pressable,
@@ -20,6 +21,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { ChatMessage, SuggestedPrompt } from '@/data/ask-khetha';
+import { useAuth } from '@/contexts/auth-context';
 import { useTheme } from '@/hooks/use-theme';
 import { ApiError } from '@/services/api-client';
 import { ChatService } from '@/services/chat-service';
@@ -33,11 +35,13 @@ function formatTime() {
 
 export default function AskKhethaScreen() {
   const theme = useTheme();
+  const { learner } = useAuth();
   const chatScrollRef = useRef<ScrollView>(null);
   const nextMessageId = useRef(0);
   const [messages, setMessages] = useState<ChatMessage[] | null>(null);
   const [suggestedPrompts, setSuggestedPrompts] = useState<SuggestedPrompt[]>([]);
   const [roadmap, setRoadmap] = useState<Roadmap | null>(null);
+  const [roadmapError, setRoadmapError] = useState<string | null>(null);
   const [inputText, setInputText] = useState('');
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loadAttempt, setLoadAttempt] = useState(0);
@@ -45,17 +49,12 @@ export default function AskKhethaScreen() {
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([
-      ChatService.getConversationHistory(),
-      ChatService.getSuggestedPrompts(),
-      RoadmapService.getRoadmap(),
-    ])
-      .then(([history, prompts, roadmapResult]) => {
+    Promise.all([ChatService.getConversationHistory(), ChatService.getSuggestedPrompts()])
+      .then(([history, prompts]) => {
         if (cancelled) return;
         setLoadError(null);
         setMessages(history);
         setSuggestedPrompts(prompts);
-        setRoadmap(roadmapResult);
       })
       .catch((error: unknown) => {
         if (cancelled) return;
@@ -65,6 +64,26 @@ export default function AskKhethaScreen() {
       cancelled = true;
     };
   }, [loadAttempt]);
+
+  useEffect(() => {
+    if (!learner) return;
+    let cancelled = false;
+    RoadmapService.getRoadmap()
+      .then((result) => {
+        if (!cancelled) {
+          setRoadmap(result);
+          setRoadmapError(null);
+        }
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setRoadmapError(error instanceof ApiError ? error.message : 'Could not load your roadmap.');
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [learner]);
 
   function generateMessageId(suffix: string) {
     nextMessageId.current += 1;
@@ -137,7 +156,7 @@ export default function AskKhethaScreen() {
               </ThemedText>
             </Pressable>
           </View>
-        ) : messages === null || !roadmap ? (
+        ) : messages === null ? (
           <ScreenLoading label="Loading Ask Khetha..." />
         ) : (
           <ScrollView
@@ -274,47 +293,102 @@ export default function AskKhethaScreen() {
 
             {/* Career roadmap */}
             <View style={[styles.section, { backgroundColor: theme.surfaceContainerLowest, borderColor: theme.cardBorder }]}>
-              <View style={styles.roadmapHeader}>
-                <View>
-                  <ThemedText type="smallBold" themeColor="primary" style={styles.roadmapTitle}>
-                    My Career Roadmap
-                  </ThemedText>
-                  <ThemedText type="small" themeColor="onSurfaceVariant">
-                    Grade 12 Matriculated Milestone Tracking
-                  </ThemedText>
-                </View>
-                <View style={styles.roadmapProgressColumn}>
+              {!learner ? (
+                <View style={styles.roadmapSignInPrompt}>
+                  <MaterialIcons name="route" size={28} color={theme.primary} />
                   <ThemedText type="smallBold" themeColor="primary">
-                    {roadmap.progressLabel}
+                    Track Your Career Roadmap
                   </ThemedText>
-                  <View style={[styles.progressTrack, { backgroundColor: theme.surfaceContainer }]}>
-                    <View
-                      style={[
-                        styles.progressFill,
-                        { width: `${roadmap.progressPercent}%`, backgroundColor: theme.primary },
-                      ]}
-                    />
+                  <ThemedText type="small" themeColor="onSurfaceVariant" style={styles.roadmapSignInText}>
+                    Create a free account to save your progress across subjects, assessments, shortlisted careers
+                    and funding applications.
+                  </ThemedText>
+                  <Pressable
+                    onPress={() => router.push('/account')}
+                    style={({ pressed }) => [
+                      styles.roadmapSignInButton,
+                      { backgroundColor: theme.primary },
+                      pressed && styles.pressed,
+                    ]}>
+                    <ThemedText type="smallBold" themeColor="onPrimary">
+                      Sign In / Register
+                    </ThemedText>
+                  </Pressable>
+                </View>
+              ) : roadmapError ? (
+                <View style={styles.roadmapSignInPrompt}>
+                  <MaterialIcons name="cloud-off" size={28} color={theme.onSurfaceVariant} />
+                  <ThemedText type="small" themeColor="onSurfaceVariant" style={styles.roadmapSignInText}>
+                    {roadmapError}
+                  </ThemedText>
+                  <Pressable
+                    onPress={() => {
+                      setRoadmapError(null);
+                      setRoadmap(null);
+                      RoadmapService.getRoadmap()
+                        .then(setRoadmap)
+                        .catch((error: unknown) =>
+                          setRoadmapError(error instanceof ApiError ? error.message : 'Could not load your roadmap.'),
+                        );
+                    }}
+                    style={({ pressed }) => [
+                      styles.roadmapSignInButton,
+                      { backgroundColor: theme.primary },
+                      pressed && styles.pressed,
+                    ]}>
+                    <ThemedText type="smallBold" themeColor="onPrimary">
+                      Retry
+                    </ThemedText>
+                  </Pressable>
+                </View>
+              ) : !roadmap ? (
+                <ScreenLoading label="Loading your roadmap..." />
+              ) : (
+                <>
+                  <View style={styles.roadmapHeader}>
+                    <View>
+                      <ThemedText type="smallBold" themeColor="primary" style={styles.roadmapTitle}>
+                        My Career Roadmap
+                      </ThemedText>
+                      <ThemedText type="small" themeColor="onSurfaceVariant">
+                        {learner.name ? `${learner.name}'s ` : ''}
+                        {learner.grade ? `Grade ${learner.grade} ` : ''}Journey
+                      </ThemedText>
+                    </View>
+                    <View style={styles.roadmapProgressColumn}>
+                      <ThemedText type="smallBold" themeColor="primary">
+                        {roadmap.progressLabel}
+                      </ThemedText>
+                      <View style={[styles.progressTrack, { backgroundColor: theme.surfaceContainer }]}>
+                        <View
+                          style={[
+                            styles.progressFill,
+                            { width: `${roadmap.progressPercent}%`, backgroundColor: theme.primary },
+                          ]}
+                        />
+                      </View>
+                    </View>
                   </View>
-                </View>
-              </View>
 
-              <View style={styles.roadmapSteps}>
-                {roadmap.steps.map((step, index) => (
-                  <RoadmapStepRow key={step.id} step={step} isLast={index === roadmap.steps.length - 1} />
-                ))}
-              </View>
+                  <View style={styles.roadmapSteps}>
+                    {roadmap.steps.map((step, index) => (
+                      <RoadmapStepRow key={step.id} step={step} isLast={index === roadmap.steps.length - 1} />
+                    ))}
+                  </View>
 
-              <View style={[styles.offlinePill, { backgroundColor: theme.surfaceContainerLow }]}>
-                <View style={styles.offlinePillLeft}>
-                  <MaterialIcons name="cloud-done" size={18} color={theme.secondary} />
-                  <ThemedText type="small" themeColor="secondary">
-                    All roadmap items stored on this device
-                  </ThemedText>
-                </View>
-                <ThemedText type="small" themeColor="outline" style={styles.syncedLabel}>
-                  SYNCHRONIZED
-                </ThemedText>
-              </View>
+                  <View style={[styles.offlinePill, { backgroundColor: theme.surfaceContainerLow }]}>
+                    <View style={styles.offlinePillLeft}>
+                      <MaterialIcons name="cloud-done" size={18} color={theme.secondary} />
+                      <ThemedText type="small" themeColor="secondary">
+                        Synced to your Khetha account
+                      </ThemedText>
+                    </View>
+                    <ThemedText type="small" themeColor="outline" style={styles.syncedLabel}>
+                      SYNCHRONIZED
+                    </ThemedText>
+                  </View>
+                </>
+              )}
             </View>
 
             <DhetGuidanceCard />
@@ -495,6 +569,20 @@ const styles = StyleSheet.create({
   inputFootnote: {
     textAlign: 'center',
     fontSize: 10,
+  },
+  roadmapSignInPrompt: {
+    alignItems: 'center',
+    gap: Spacing.two,
+    padding: Spacing.four,
+  },
+  roadmapSignInText: {
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+  roadmapSignInButton: {
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
+    borderRadius: Radius.full,
   },
   roadmapHeader: {
     flexDirection: 'row',

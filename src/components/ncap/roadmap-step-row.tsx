@@ -26,21 +26,9 @@ export function RoadmapStepRow({ step, isLast }: RoadmapStepRowProps) {
   const cardBackground: ThemeColor = step.status === 'active' ? 'surfaceContainerHigh' : 'surfaceContainerLow';
   const titleColor: ThemeColor = step.status === 'active' ? 'primary' : 'onSurface';
   const badgeBackground: ThemeColor =
-    step.status === 'done'
-      ? 'primaryContainer'
-      : step.status === 'active'
-        ? 'secondary'
-        : step.status === 'inProgress'
-          ? 'tertiaryContainer'
-          : 'surfaceContainer';
+    step.status === 'done' ? 'primaryContainer' : step.status === 'active' ? 'secondary' : 'surfaceContainer';
   const badgeColor: ThemeColor =
-    step.status === 'done'
-      ? 'onPrimaryContainer'
-      : step.status === 'active'
-        ? 'onSecondary'
-        : step.status === 'inProgress'
-          ? 'onTertiaryContainer'
-          : 'onSurfaceVariant';
+    step.status === 'done' ? 'onPrimaryContainer' : step.status === 'active' ? 'onSecondary' : 'onSurfaceVariant';
 
   return (
     <View style={styles.row}>

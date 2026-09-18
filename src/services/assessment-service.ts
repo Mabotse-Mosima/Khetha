@@ -1,10 +1,15 @@
-import { AssessmentQuestion, currentAssessmentQuestion } from '@/data/assessment-questions';
+import { AssessmentAnswer, AssessmentResult, HollandCodeQuestion } from '@/data/assessment-questions';
 
-import { simulateNetwork } from './network';
+import { apiClient } from './api-client';
 
 export const AssessmentService = {
-  // GET /assessment/current-question — the in-progress session's next question.
-  getCurrentQuestion(): Promise<AssessmentQuestion> {
-    return simulateNetwork(currentAssessmentQuestion);
+  // GET /api/Assessment/questions
+  getQuestions(): Promise<HollandCodeQuestion[]> {
+    return apiClient.get<HollandCodeQuestion[]>('/Assessment/questions');
+  },
+
+  // POST /api/Assessment/submit
+  submitAnswers(answers: AssessmentAnswer[]): Promise<AssessmentResult> {
+    return apiClient.post<AssessmentResult>('/Assessment/submit', { answers });
   },
 };

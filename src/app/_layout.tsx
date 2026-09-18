@@ -9,16 +9,16 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const colorScheme = useColorScheme();
 
- return (
-  <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-    <AnimatedSplashOverlay />
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="index" />
-      <Stack.Screen name="onboarding" />
-      <Stack.Screen name="home" />
-      <Stack.Screen name="(tabs)" />
-      <Stack.Screen name="career-detail" options={{ presentation: 'card' }} />
-    </Stack>
-  </ThemeProvider>
-);
+  return (
+    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <AnimatedSplashOverlay />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="onboarding" />
+        <Stack.Screen name="home" />
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="career-detail" options={{ presentation: 'card' }} />
+      </Stack>
+    </ThemeProvider>
+  );
 }
