@@ -12,6 +12,9 @@ export default function RootLayout() {
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <AnimatedSplashOverlay />
       <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="onboarding" />
+        <Stack.Screen name="home" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="career-detail" options={{ presentation: 'card' }} />
       </Stack>
