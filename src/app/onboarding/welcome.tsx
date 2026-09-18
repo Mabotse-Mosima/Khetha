@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
+import { useOnboarding } from '@/context/onboarding-context';
 import { useTheme } from '@/hooks/use-theme';
 import { Radius, Spacing } from '@/constants/theme';
 import { Image } from 'expo-image';
@@ -17,6 +18,7 @@ const routes = [
 export default function WelcomeScreen() {
   const router = useRouter();
   const theme = useTheme();
+  const { setAudience } = useOnboarding();
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: theme.surfaceContainerLowest }]}>
@@ -38,7 +40,10 @@ export default function WelcomeScreen() {
           {routes.map((item, index) => (
             <Pressable
               key={item.id}
-              onPress={() => router.push(item.target)}
+              onPress={() => {
+                setAudience(item.id as 'school' | 'finished' | 'helper');
+                router.push(item.target);
+              }}
               style={({ pressed }) => [
                 styles.routeCard,
                 { borderColor: index === 0 ? theme.primary : theme.outlineVariant, backgroundColor: index === 0 ? theme.primaryFixed : theme.surfaceContainerLowest },

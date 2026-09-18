@@ -1,22 +1,25 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTheme } from '@/hooks/use-theme';
 import { Radius, Spacing } from '@/constants/theme';
+import { useOnboarding } from '@/context/onboarding-context';
 
 const provinces = ['KwaZulu-Natal', 'Gauteng', 'Western Cape', 'Eastern Cape', 'Limpopo', 'Mpumalanga', 'North West', 'Free State', 'Northern Cape'];
 const tracks = ['School', 'TVET college', 'University', 'Not studying'];
-const grades = ['Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
+const grades = ['Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12', 'Not applicable'];
 
 export default function ProfileScreen() {
   const router = useRouter();
   const theme = useTheme();
+  const { audience, setProfile } = useOnboarding();
   const [age, setAge] = useState('17');
   const [province, setProvince] = useState('KwaZulu-Natal');
+  const [provinceOpen, setProvinceOpen] = useState(false);
   const [track, setTrack] = useState('School');
   const [grade, setGrade] = useState('Grade 11');
   const [disability, setDisability] = useState('No');
@@ -36,8 +39,35 @@ export default function ProfileScreen() {
         <ThemedText type="default" themeColor="onSurfaceVariant">This helps us show providers and funding near you.</ThemedText>
 
         <View style={styles.twoCol}>
-          <Field label="Age" value={age} />
-          <Field label="Province" value={province} dropdown />
+          <Field label="Age" value={age} onChangeText={setAge} keyboardType="number-pad" />
+          <View style={styles.field}>
+            <ThemedText type="small" themeColor="onSurfaceVariant">Province</ThemedText>
+            <Pressable
+              onPress={() => setProvinceOpen((value) => !value)}
+              style={[styles.fieldBox, { borderColor: theme.outlineVariant }]}
+              accessibilityRole="button"
+              accessibilityLabel="Select province"
+            >
+              <ThemedText type="smallBold" style={styles.fieldValue}>{province}</ThemedText>
+              <MaterialIcons name={provinceOpen ? 'expand-less' : 'expand-more'} size={18} color={theme.outline} />
+            </Pressable>
+            {provinceOpen && (
+              <View style={[styles.dropdown, { borderColor: theme.outlineVariant, backgroundColor: theme.surfaceContainerLowest }]}>
+                {provinces.map((item) => (
+                  <Pressable
+                    key={item}
+                    onPress={() => {
+                      setProvince(item);
+                      setProvinceOpen(false);
+                    }}
+                    style={[styles.dropdownOption, province === item && { backgroundColor: theme.primaryFixed }]}
+                  >
+                    <ThemedText type="smallBold">{item}</ThemedText>
+                  </Pressable>
+                ))}
+              </View>
+            )}
+          </View>
         </View>
 
         <ThemedText type="smallBold" themeColor="onSurfaceVariant" style={styles.sectionLabel}>I am in</ThemedText>
@@ -48,7 +78,13 @@ export default function ProfileScreen() {
           })}
         </View>
 
-        <Field label="Grade" value={grade} dropdown />
+        <ThemedText type="smallBold" themeColor="onSurfaceVariant" style={styles.sectionLabel}>Grade</ThemedText>
+        <View style={styles.chipGrid}>
+          {grades.map((item) => {
+            const selected = grade === item;
+            return <Chip key={item} label={item} selected={selected} onPress={() => setGrade(item)} />;
+          })}
+        </View>
 
         <View style={[styles.disabilityCard, { borderColor: theme.outlineVariant }]}>
           <ThemedText type="smallBold">Do you live with a disability?</ThemedText>
@@ -61,7 +97,10 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        <Pressable onPress={() => router.push('/onboarding/subjects')} style={({ pressed }) => [styles.primaryButton, { backgroundColor: theme.primary }, pressed && styles.pressed]}>
+        <Pressable onPress={() => {
+          setProfile({ age, province, track, grade, disability });
+          router.replace(audience === 'school' ? '/onboarding/subjects' : '/onboarding/review');
+        }} style={({ pressed }) => [styles.primaryButton, { backgroundColor: theme.primary }, pressed && styles.pressed]}>
           <ThemedText type="smallBold" themeColor="onPrimary">Save and continue</ThemedText>
         </Pressable>
       </ScrollView>
@@ -69,15 +108,17 @@ export default function ProfileScreen() {
   );
 }
 
-function Field({ label, value, dropdown }: { label: string; value: string; dropdown?: boolean }) {
+function Field({ label, value, onChangeText, keyboardType }: { label: string; value: string; onChangeText: (value: string) => void; keyboardType?: 'number-pad' }) {
   const theme = useTheme();
   return (
     <View style={styles.field}>
       <ThemedText type="small" themeColor="onSurfaceVariant">{label}</ThemedText>
-      <View style={[styles.fieldBox, { borderColor: theme.outlineVariant }]}>
-        <ThemedText type="smallBold" style={styles.fieldValue}>{value}</ThemedText>
-        {dropdown && <MaterialIcons name="expand-more" size={18} color={theme.outline} />}
-      </View>
+      <TextInput
+        value={value}
+        onChangeText={onChangeText}
+        keyboardType={keyboardType}
+        style={[styles.fieldBox, styles.fieldInput, { color: theme.onSurface, borderColor: theme.outlineVariant }]}
+      />
     </View>
   );
 }
@@ -102,6 +143,9 @@ const styles = StyleSheet.create({
   field: { flex: 1, gap: Spacing.one },
   fieldBox: { minHeight: 54, borderWidth: 1, borderRadius: Radius.lg, paddingHorizontal: Spacing.two, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   fieldValue: { flexShrink: 1 },
+  fieldInput: { fontSize: 16 },
+  dropdown: { borderWidth: 1, borderRadius: Radius.lg, marginTop: Spacing.one, overflow: 'hidden' },
+  dropdownOption: { minHeight: 44, justifyContent: 'center', paddingHorizontal: Spacing.two },
   sectionLabel: { marginTop: Spacing.two },
   chipGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
   chip: { minHeight: 38, paddingHorizontal: Spacing.two, borderWidth: 1, borderRadius: Radius.full, alignItems: 'center', justifyContent: 'center' },

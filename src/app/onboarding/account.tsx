@@ -16,8 +16,10 @@ export default function AccountScreen() {
   const [email, setEmail] = useState('');
   const [smsCode, setSmsCode] = useState('');
   const [consent, setConsent] = useState(false);
+    const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailIsValid = !email.trim() || EMAIL_REGEX.test(email.trim());
 
-  const canContinue = name.trim().length >= 2 && phone.trim().length >= 8 && smsCode.length === 5 && consent;
+    const canContinue = name.trim().length >= 2 && phone.trim().length >= 8 && emailIsValid && smsCode.length === 5 && consent;
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: theme.surfaceContainerLowest }]}>

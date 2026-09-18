@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTheme } from '@/hooks/use-theme';
+import { useOnboarding } from '@/context/onboarding-context';
 import { Radius, Spacing } from '@/constants/theme';
 
 const SUBJECT_GROUPS = [
@@ -42,6 +43,7 @@ const DEFAULT_SELECTION = ['English', 'isiNdebele', 'Mathematical Literacy', 'Li
 export default function SubjectsScreen() {
   const router = useRouter();
   const theme = useTheme();
+  const { setSubjects } = useOnboarding();
   const [selected, setSelected] = useState<string[]>(DEFAULT_SELECTION);
   const [isReviewing, setIsReviewing] = useState(false);
   const selectedCounts = useMemo(
@@ -123,7 +125,10 @@ export default function SubjectsScreen() {
             <Pressable onPress={() => setIsReviewing(false)} style={[styles.secondaryButton, { borderColor: theme.outlineVariant }]}>
               <ThemedText type="smallBold" themeColor="onSurface">Edit subjects</ThemedText>
             </Pressable>
-            <Pressable onPress={() => router.replace('/home')} style={({ pressed }) => [styles.primaryButton, { backgroundColor: theme.primary }, pressed && styles.pressed]}>
+            <Pressable onPress={() => {
+              setSubjects(selected);
+              router.replace('/onboarding/review');
+            }} style={({ pressed }) => [styles.primaryButton, { backgroundColor: theme.primary }, pressed && styles.pressed]}>
               <ThemedText type="smallBold" themeColor="onPrimary">Submit</ThemedText>
             </Pressable>
           </View>

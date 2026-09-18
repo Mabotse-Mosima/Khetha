@@ -19,7 +19,7 @@ export default function LanguageScreen() {
     <SafeAreaView style={[styles.root, { backgroundColor: theme.surfaceContainerLowest }]}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <ThemedText type="title" style={styles.title}>Khetha ulimi lwakho</ThemedText>
+          <ThemedText type="title" style={styles.title}>Choose your language</ThemedText>
           <ThemedText type="subtitle" themeColor="onSurfaceVariant">Choose your language</ThemedText>
         </View>
 
@@ -49,7 +49,7 @@ export default function LanguageScreen() {
           onPress={() => router.push('/onboarding/welcome')}
           style={({ pressed }) => [styles.primaryButton, { backgroundColor: theme.primary }, pressed && styles.pressed]}
         >
-          <ThemedText type="smallBold" themeColor="onPrimary">Qhubeka · Continue</ThemedText>
+          <ThemedText type="smallBold" themeColor="onPrimary">Continue</ThemedText>
           <MaterialIcons name="arrow-forward" size={18} color={theme.onPrimary} />
         </Pressable>
       </ScrollView>
