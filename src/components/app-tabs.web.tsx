@@ -24,8 +24,14 @@ export default function AppTabs() {
           <TabTrigger name="home" href="/" asChild>
             <TabButton>Home</TabButton>
           </TabTrigger>
-          <TabTrigger name="explore" href="/explore" asChild>
-            <TabButton>Explore</TabButton>
+          <TabTrigger name="subject-chooser" href="/subject-chooser" asChild>
+            <TabButton>Subjects</TabButton>
+          </TabTrigger>
+          <TabTrigger name="career-job-fit" href="/career-job-fit" asChild>
+            <TabButton>Assess</TabButton>
+          </TabTrigger>
+          <TabTrigger name="ask-khetha" href="/ask-khetha" asChild>
+            <TabButton>Ask Khetha</TabButton>
           </TabTrigger>
         </CustomTabList>
       </TabList>

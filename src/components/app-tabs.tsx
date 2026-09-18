@@ -20,12 +20,19 @@ export default function AppTabs() {
         />
       </NativeTabs.Trigger>
 
-      <NativeTabs.Trigger name="explore">
-        <NativeTabs.Trigger.Label>Explore</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/explore.png')}
-          renderingMode="template"
-        />
+      <NativeTabs.Trigger name="subject-chooser">
+        <NativeTabs.Trigger.Label>Subjects</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="book.fill" md="menu_book" />
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="career-job-fit">
+        <NativeTabs.Trigger.Label>Assess</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="brain.head.profile" md="psychology" />
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="ask-khetha">
+        <NativeTabs.Trigger.Label>Ask Khetha</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="bubble.left.and.bubble.right.fill" md="smart_toy" />
       </NativeTabs.Trigger>
     </NativeTabs>
   );

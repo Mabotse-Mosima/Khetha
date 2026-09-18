@@ -1,98 +1,87 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
+import { DeadlineBanner } from '@/components/ncap/deadline-banner';
+import { GreetingSection } from '@/components/ncap/greeting-section';
+import { HelplineCard } from '@/components/ncap/helpline-card';
+import { OfflineBanner } from '@/components/ncap/offline-banner';
+import { PrimaryActionCard } from '@/components/ncap/primary-action-card';
+import { QuickActionsGrid } from '@/components/ncap/quick-actions-grid';
+import { QuizPromptCard } from '@/components/ncap/quiz-prompt-card';
+import { RecommendedCareersCarousel } from '@/components/ncap/recommended-careers-carousel';
+import { TopNavBar } from '@/components/ncap/top-nav-bar';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
-
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
-  return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
 
 export default function HomeScreen() {
   return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+    <ThemedView style={styles.root}>
+      <SafeAreaView style={styles.centeredColumn} edges={['top']}>
+        <TopNavBar />
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}>
+          <OfflineBanner />
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+          <GreetingSection name="Thabo" grade="Grade 11" track="TVET Track" />
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
+          <PrimaryActionCard
+            stepLabel="Step 3 of 6"
+            title="Explore Scarce Skills"
+            progressLabel="45% Complete"
+            progressPercent={45}
+            ctaLabel="Continue Journey"
           />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
 
-        {Platform.OS === 'web' && <WebBadge />}
+          <QuizPromptCard />
+
+          <QuickActionsGrid />
+
+          <RecommendedCareersCarousel />
+
+          <View style={styles.deadlinesSection}>
+            <ThemedText type="subtitle" style={styles.deadlinesTitle}>
+              Upcoming Deadlines &amp; Support
+            </ThemedText>
+            <DeadlineBanner
+              eyebrow="BURSARY MILESTONE"
+              daysLeftLabel="18 Days Left"
+              title="NSFAS 2026 Window Opens"
+              description="Gather your ID document, parent/guardian consent affidavit, and matric mark statements early."
+            />
+            <HelplineCard />
+          </View>
+        </ScrollView>
       </SafeAreaView>
     </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  root: {
     flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
-  },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
     alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
+  },
+  centeredColumn: {
+    flex: 1,
+    width: '100%',
     maxWidth: MaxContentWidth,
   },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
+  scroll: {
     flex: 1,
-    paddingHorizontal: Spacing.four,
+  },
+  scrollContent: {
     gap: Spacing.four,
-  },
-  title: {
-    textAlign: 'center',
-  },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
     paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
+    paddingBottom: BottomTabInset + Spacing.four,
+  },
+  deadlinesSection: {
+    gap: Spacing.two,
+  },
+  deadlinesTitle: {
+    fontSize: 18,
+    lineHeight: 24,
   },
 });
